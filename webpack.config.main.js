@@ -6,7 +6,7 @@ module.exports = {
 
     //This property defines the file path and the file name which will be used for deploying the bundled file
     output: {
-        path: path.join(__dirname, '/website/static'),
+        path: path.join(__dirname, '/website/dist'),
         filename: 'HL.js',
         library: 'HL',
         libraryTarget: 'var'
