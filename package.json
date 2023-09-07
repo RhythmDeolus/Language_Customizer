@@ -6,13 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack --mode development",
-    "build": "npm run build_hl & npm run build_app",
-    "start": "webpack-dev-server --open --mode development --config   webpack.config.website.js",
-    "build_hl": "webpack --mode production --config  webpack.config.main.js",
-    "build_app": "webpack --mode production --config   webpack.config.website.js",
-    "buildnstart": "npm run build_hl & npm run build_app & node website\\server.js",
-    "start_server": "node server.js"  },
-  "author": "rhythm",
+    "build-prod": "webpack --mode production --config  webpack.config.main.js",
+    "build-dev" : "webpack --mode development --config  webpack.config.main.js"
+  },
+  "author": "Rhythm Deolus",
   "license": "ISC",
   "dependencies": {
     "express": "^4.18.2",
