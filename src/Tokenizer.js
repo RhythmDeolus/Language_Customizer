@@ -56,6 +56,65 @@ let Keywords = {
     "and" : TokenTypes.AND,
 }
 
+
+let KeyColors = [
+    ["#f46049" , TokenTypes.VAR],
+    ["#fbbe5b" , TokenTypes.IF],
+    ["#fbbe5b" , TokenTypes.ELSE],
+    ["#fbbe5b" , TokenTypes.WHILE],
+    ["#fbbe5b" , TokenTypes.FOR],
+    ["#fbbe5b" , TokenTypes.FUNCTION],
+    ["#1e9ae0" , TokenTypes.TRUE],
+    ["#1e9ae0" , TokenTypes.FALSE],
+    ["#1e9ae0" , TokenTypes.NONE],
+    ["#fbbe5b" , TokenTypes.PRINT],
+    ["#fbbe5b" , TokenTypes.CLASS],
+    ["#f46049" , TokenTypes.RETURN],
+    ["#fbbe5b" , TokenTypes.OR],
+    ["#fbbe5b" , TokenTypes.AND]
+]
+
+let KeyDesc = [
+    [TokenTypes.VAR, "declares function-scoped or globally-scoped variables, optionally initializing each to a value."],
+    [TokenTypes.IF, "executes a statement if a specified condition is truthy"],
+    [TokenTypes.ELSE, "If the condition is falsy, another statement in the optional else clause will be executed."],
+    [TokenTypes.WHILE, "creates a loop that executes a specified statement as long as the test condition evaluates to true."],
+    [TokenTypes.FOR, "creates a loop that consists of three optional expressions, enclosed in parentheses and separated by semicolons, followed by a statement to be executed in the loop."],
+    [TokenTypes.FUNCTION, "creates a binding of a new function to a given name."],
+    [TokenTypes.TRUE, "boolean value equivalent to true"],
+    [TokenTypes.FALSE, "boolean value equivalent to true"],
+    [TokenTypes.NONE, "null value"],
+    [TokenTypes.PRINT, "prints to the output"],
+    [TokenTypes.CLASS, "creates a class"],
+    [TokenTypes.RETURN, "ends function execution and specifies a value to be returned to the function caller."],
+    [TokenTypes.OR, "boolean operator equivalent to or"],
+    [TokenTypes.AND, "boolean operator equivalent to and"]
+]
+
+let temp2 = {}
+
+for (let [key, desc] of KeyDesc) {
+    temp2[key] = desc;
+}
+
+KeyDesc = temp2;
+
+
+
+let temp = {};
+
+for (let [color, key] of KeyColors) {
+    temp[key] = color;
+}
+
+KeyColors = temp;
+
+let reverseKeywords = {};
+
+for (let [key, value] of Object.entries(Keywords)) {
+    reverseKeywords[value] = key;
+}
+
 class Token {
     constructor(lineno, type, literal) {
         this.lineno = lineno;
@@ -271,4 +330,4 @@ class Tokenizer {
     }
 }
 
-export  {Tokenizer, Token, TokenTypes, Keywords};
+export  {Tokenizer, Token, TokenTypes, Keywords, reverseKeywords, KeyColors, KeyDesc};

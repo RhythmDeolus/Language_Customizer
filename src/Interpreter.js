@@ -199,7 +199,7 @@ class Interpreter {
     printValue(value) {
         if (value === null) this.out.value += "None";
         else if (value === true) this.out.value += "True";
-        else if (value == false) this.out.value +="False";
+        else if (value === false) this.out.value +="False";
         else this.out.value += value;
     }
     evalBinary(statement) {

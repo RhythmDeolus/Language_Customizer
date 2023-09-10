@@ -1,11 +1,10 @@
-import {Tokenizer, Keywords, TokenTypes} from "./Tokenizer.js";
+import {Tokenizer, Keywords, TokenTypes, reverseKeywords, KeyColors, KeyDesc} from "./Tokenizer.js";
 
 import { Parser } from "./Parser.js";
 
 import { Interpreter } from "./Interpreter.js";
 
 // import fs from 'fs';
-
 
 class HL {
     run(text, out) {
@@ -18,6 +17,20 @@ class HL {
     }
     getKeywords() {
         return Keywords;
+    }
+    getReverseKeywords() {
+        return reverseKeywords;
+    }
+    setKeyword(pid, nkey) {
+        delete Keywords[reverseKeywords[pid]];
+        Keywords[nkey] = pid;
+        reverseKeywords[pid] = nkey;
+    }
+    getKeyColors() {
+        return KeyColors;
+    }
+    getKeyDesc() {
+        return KeyDesc;
     }
 }
 
