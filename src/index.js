@@ -4,8 +4,6 @@ import { Parser } from "./Parser.js";
 
 import { Interpreter } from "./Interpreter.js";
 
-// import fs from 'fs';
-
 class HL {
     run(text, out) {
         let tokeizer = new Tokenizer();
@@ -22,9 +20,9 @@ class HL {
         return reverseKeywords;
     }
     setKeyword(pid, nkey) {
-        delete Keywords[reverseKeywords[pid]];
-        Keywords[nkey] = pid;
-        reverseKeywords[pid] = nkey;
+        delete Keywords[reverseKeywords[Number(pid)]];
+        Keywords[nkey] = Number(pid);
+        reverseKeywords[Number(pid)] = nkey;
     }
     getKeyColors() {
         return KeyColors;
@@ -34,18 +32,7 @@ class HL {
     }
 }
 
-var hl = new HL();
+let hl = new HL();
 
 export {hl};
-// let text = fs.readFileSync('./test.lux', 'utf8');
-
-// let text = "print 'hello world';";
-
-
-// console.log(tokens);
-
-
-
-// console.log(statements);
-// console.log(interpreter.globals);
 
