@@ -169,6 +169,11 @@ class Tokenizer {
                     this.tokens.push(new Token(lineno, TokenTypes.MUL, c))
                     break;
                 case "/":
+                    if (this.peek() == "/") {
+                        this.currIndex += 1;
+                        this.comment();
+                        break;
+                    }
                     this.tokens.push(new Token(lineno, TokenTypes.DIV, c))
                     break;
                 case ";":
@@ -246,6 +251,9 @@ class Tokenizer {
         this.currliteral = "";
         this.currLine = 1;
         return t;
+    }
+    comment() {
+        while(this.peek() != '\n' && this.peek() !== null) this.currIndex++;
     }
     string_l(c) {
         let i = this.currIndex;
