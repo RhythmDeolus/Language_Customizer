@@ -1,4 +1,4 @@
-import {Token, TokenTypes} from "./Tokenizer.js";
+import {Token, TokenTypes, CompilerError} from "./Tokenizer.js";
 
 class ASTNode {
     constructor(type) {
@@ -173,6 +173,7 @@ class Parser {
                 this.statements.push(this.statement());
             } catch (err) {
                 console.log(err);
+                throw err;
                 this.synchronize();
             }
         }
@@ -211,7 +212,7 @@ class Parser {
     }
 
     returnStatement() {
-        if (this.funScope === 0) throw new Error("You can only use Return statement inside a function");
+        if (this.funScope === 0) throw new CompilerError("You can only use Return statement inside a function", this.getLineNo());
         let e = this.expressionList();
         this.consume(TokenTypes.LINE_END, "Expected an end of line token.");
         return new ReturnStatement(e);
@@ -238,7 +239,7 @@ class Parser {
             list.push(this.varDeclaration());
         } while (!this.isAtEnd() && this.match(TokenTypes.COMMA));
 
-        if (this.isAtEnd()) throw new Error("Unexpected end of stream.");
+        if (this.isAtEnd()) throw new CompilerError("Unexpected end of stream.", this.getLineNo());
 
         return list;
     }
@@ -272,7 +273,7 @@ class Parser {
         while(!this.isAtEnd() && this.match(TokenTypes.COMMA)) {
             list.push(this.or());
         }
-        if (this.isAtEnd()) throw new Error("Unexpected end of stream");
+        if (this.isAtEnd()) throw new CompilerError("Unexpected end of stream", this.getLineNo());
         return new ExprList(list);
     }
 
@@ -291,7 +292,7 @@ class Parser {
             else list.push(this.or());
         } while ((!this.isAtEnd() && this.match(TokenTypes.COMMA)));
         console.log(list);
-        if (this.isAtEnd()) throw new Error("unexpected end of stream.");
+        if (this.isAtEnd()) throw new CompilerError("unexpected end of stream.", this.getLineNo());
         return new VarExprList(list);
     }
 
@@ -304,7 +305,7 @@ class Parser {
             }
             return new VarDeclaration(NodeTypes.VARDECLARATION, i, e);
         }
-        throw new Error("Expected an identifer in variable declaration.");
+        throw new CompilerError("Expected an identifer in variable declaration.", this.getLineNo());
     }
 
     block() {
@@ -312,7 +313,7 @@ class Parser {
         while(!this.isAtEnd() && !this.check(TokenTypes.CLOSE_CURLY)) {
             statments.push(this.statement());
         }
-        if (this.isAtEnd()) throw new Error("Unexpected end of stream");
+        if (this.isAtEnd()) throw new CompilerError("Unexpected end of stream", this.getLineNo());
         this.consume(TokenTypes.CLOSE_CURLY, "Expect '}'");
         return new Block(statments);
     }
@@ -355,7 +356,7 @@ class Parser {
             if (e1.isAssignable()) {
                 e1 =  new BinaryOperation(e1, right, t);
             } else {
-                throw new Error("Unable to assign value to non-variable");
+                throw new CompilerError("Unable to assign value to non-variable", this.getLineNo());
             }
         }
         return e1;
@@ -379,6 +380,10 @@ class Parser {
 
             this.advance();
         }
+    }
+
+    getLineNo() {
+        return this.peek()?.lineno || this.previous()?.lineno || 'NA';
     }
 
     equality() {
@@ -485,7 +490,7 @@ class Parser {
     }
     error(token, message) {
         // do something here
-        return new Error(message);
+        return new CompilerError(message, this.getLineNo());
     }
     isAtEnd() {
         return this.currToken >= this.tokens.length;
@@ -526,7 +531,7 @@ class Parser {
         if (this.match(type)) {
             return true;
         }
-        throw Error(error);
+        throw new CompilerError(error, this.getLineNo());
     }
 
     literal() {

@@ -38,6 +38,17 @@ let TokenTypes = Object.freeze({
     COMMA: 36,
 })
 
+class CompilerError extends Error {
+    constructor(message, lineno) {
+        super(message)
+        this.name = this.constructor.name;
+        this.lineno = lineno;
+    }
+    toString() {
+        return `${this.name}: ${this.message} (line no: ${this.lineno})`;
+    }
+}
+
 
 let Keywords = {
     "var" : TokenTypes.VAR,
@@ -197,7 +208,6 @@ class Tokenizer {
                     break;
                 case "=":
                     if (this.peek() == '=') {
-                        console.log("parising double equal", lineno);
                         this.currIndex += 1;
                         this.tokens.push(new Token(lineno, TokenTypes.EQUAL_EQUAL, "=="))
                         break;
@@ -220,14 +230,14 @@ class Tokenizer {
                         this.currIndex += 1;
                         this.tokens.push(new Token(lineno, TokenTypes.AND, "&&"));
                     }
-                    else throw Error("Unidentified Token");
+                    else throw new CompilerError("Unrecognized Character &.", lineno);
                     break;
                 case "|":
                     if (this.peek() == '|') {
                         this.currIndex += 1;
                         this.tokens.push(new Token(lineno, TokenTypes.OR, "||"));
                     }
-                    else throw Error("Unidentified Token");
+                    else throw new CompilerError("Unrecognized Character |.", lineno);
                     break;
                 case "\n":
                     this.currLine++;
@@ -241,6 +251,12 @@ class Tokenizer {
                         this.number_l();
                     } else if (this.isLetter(c)) {
                         this.identifier_l();
+                    } else if (c === '\t') {
+                        // nothing
+                    } else if (c === ' ') {
+                        // nothing
+                    } else {
+                        throw new CompilerError(`Unrecognized Character '${c}'.`, lineno);
                     }
             }
             this.currIndex++;
@@ -282,9 +298,8 @@ class Tokenizer {
             this.currIndex++;
         }
         if (this.peek() === null) {
-            throw Error("String not ending");
+            throw new CompilerError("String not ending.", this.currLine);
         }
-        // let literal = this.text.slice(i + 1, this.currIndex + 1);
         this.currIndex++;
         this.tokens.push(new Token(this.currLine, TokenTypes.STRING, string_building));
     }
@@ -338,4 +353,4 @@ class Tokenizer {
     }
 }
 
-export  {Tokenizer, Token, TokenTypes, Keywords, reverseKeywords, KeyColors, KeyDesc};
+export  {Tokenizer, Token, TokenTypes, Keywords, reverseKeywords, KeyColors, KeyDesc, CompilerError};
