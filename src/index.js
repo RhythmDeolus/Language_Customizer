@@ -2,7 +2,7 @@ import {Tokenizer, Keywords, TokenTypes, reverseKeywords, KeyColors, KeyDesc, Co
 
 import { Parser } from "./Parser.js";
 
-import { Interpreter } from "./Interpreter.js";
+import { Interpreter, RuntimeError } from "./Interpreter.js";
 
 import {documentations} from "./documentation.js";
 
@@ -16,7 +16,7 @@ class HL {
             let interpreter = new Interpreter(statements, out);
             interpreter.run();
         } catch (err) {
-            if (err instanceof CompilerError) {
+            if (err instanceof CompilerError || err instanceof RuntimeError) {
                 out.err = true;
                 out.errMsg = err.toString();
             } else {
