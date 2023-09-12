@@ -51,10 +51,24 @@ function documentations() {
       `}\n`
     },
     {
-      "id": 5,
+      "id": 6,
       "title": "Comments",
       "desc": "Here is how to write a comment", 
       "code": `// this is a comment`
+    },
+    {
+      "id": 7,
+      "title": "Print Statement",
+      "desc": "Here is how to write to the output", 
+      "code": `${reverseKeywords[TokenTypes.PRINT]} 'hello world';`
+    },
+    {
+      "id": 8,
+      "title": "Variable Assignment",
+      "desc": "Here is how to assign a value to variables", 
+      "code": `variable_name = 'hello world'; // single variable assignment\n` +
+      `//or\n` +
+      `variable1, variable2 = 'hello', 'world'; // multiple variable assignment`
     }
   ]
 }
