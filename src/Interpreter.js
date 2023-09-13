@@ -15,6 +15,160 @@ class FunctionCall {
     }
 }
 
+class Operations {
+    newValue(type, a) {
+        return new Value(type, a);
+    }
+    checkB(a, b, typea, typeb) {
+        if (a.type === typea && b.type === typeb) return true;
+        return false;
+    }
+    getValueAfterOpB(a, b, op) {
+        switch(op.type) {
+            case TokenTypes.ADD:
+                return this.add(a, b);
+            case TokenTypes.MINUS:
+                return this.sub(a, b);
+            case TokenTypes.DIV:
+                return this.div(a, b);
+            case TokenTypes.MUL:
+                return this.mul(a, b);
+            case TokenTypes.EQUAL_EQUAL:
+                return this.equal_equal(a, b);
+            case TokenTypes.BANG_EQUAL:
+                return this.not_equal(a, b);
+            case TokenTypes.GREATER_THAN:
+                return this.greater(a, b);
+            case TokenTypes.GREATER_THAN_EQUAL_TO:
+                return this.greater_equal(a, b);
+            case TokenTypes.LESS_THAN:
+                return this.less(a, b);
+            case TokenTypes.LESS_THAN_EQUAL_TO:
+                return this.less_equal(a, b);
+            case TokenTypes.OR:
+                return this.or(a, b);
+            case TokenTypes.AND:
+                return this.and(a, b);
+        }
+    }
+
+    getValueAfterOpU(a, op) {
+        switch(op.type) {
+            case TokenTypes.MINUS:
+                return this.uminus(a);
+            case TokenTypes.NOT:
+                return this.not(a);
+        }
+    }
+
+    operateB(a, b, op) {
+        console.log(a, b, op);
+        let result = this.getValueAfterOpB(a, b, op);
+        console.log(result);
+        if (result !== undefined) return result;
+        this.raiseOperationError(op, a, b);
+    }
+    operateU(a, op) {
+        let result = this.getValueAfterOpU(a, op);
+        if (result !== undefined) return result;
+        this.raiseOperationError(op, a);
+    }
+
+    raiseOperationError(operation, a, b) {
+        this.raiseRuntimeError(`Can't do operation ${operation.literal} on ${this.getDataTypeName(a.type)}` + (b === undefined? '' :` and ${this.getDataTypeName(b.type)}.`));
+    }
+    getDataTypeName(enum_val) {
+        for(let key in NodeTypes) {
+            if (NodeTypes[key] === enum_val) return key;
+        }
+        return null;
+    } 
+    add(a, b) {
+        if (this.checkB(a, b, NodeTypes.NUMBER, NodeTypes.NUMBER) ||
+        this.checkB(a, b, NodeTypes.STRING, NodeTypes.STRING))
+        return this.newValue(a.type, a.value + b.value);
+    }
+    sub(a, b) {
+        if (this.checkB(a, b, NodeTypes.NUMBER, NodeTypes.NUMBER) )
+        return this.newValue(NodeTypes.NUMBER, a.value - b.value);
+    }
+    mul(a, b) {
+        if (this.checkB(a, b, NodeTypes.STRING, NodeTypes.NUMBER)) {
+            if (Number.isInteger(b.value) && b.value >= 0) {
+                let result = "";
+                for (let i = 0; i < b.value; i++) {
+                    result += a.value;
+                }
+                return this.newValue(NodeTypes.STRING, result);
+            } else this.raiseRuntimeError("Can not multiply string with a non-integer number.");
+        }
+        if (this.checkB(a, b, NodeTypes.NUMBER, NodeTypes.NUMBER)) return this.newValue(NodeTypes.NUMBER, a.value * b.value);
+    }
+    div(a, b) {
+        if (this.checkB(a, b, NodeTypes.NUMBER, NodeTypes.NUMBER))
+        return this.newValue(NodeTypes.NUMBER, a.value / b.value);
+    }
+    areSameType(a, b) {
+        return a.type === b.type;
+    }
+    equal_equal(a, b) {
+        if (this.areSameType(a, b))
+        return this.newValue(NodeTypes.BOOLEAN, a.value === b.value);
+    }
+    not_equal(a, b) {
+        if (this.areSameType(a, b))
+        return this.newValue(NodeTypes.BOOLEAN, a.value !== b.value);
+    }
+    areType(a, b, type) {
+        return a.type == type && b.type == type;
+    }
+    isType(a, type) {
+        return a.type == type;
+    }
+    greater(a, b) {
+        if (this.areType(a, b, NodeTypes.NUMBER) || 
+        this.areType(a, b, NodeTypes.STRING))
+        return this.newValue(NodeTypes.BOOLEAN, a.value > b.value);
+    }
+    greater_equal(a, b) {
+        if (this.areType(a, b, NodeTypes.NUMBER) || 
+        this.areType(a, b, NodeTypes.STRING))
+        return this.newValue(NodeTypes.BOOLEAN, a.value >= b.value);
+    }
+    less(a, b) {
+        if (this.areType(a, b, NodeTypes.NUMBER) || 
+        this.areType(a, b, NodeTypes.STRING))
+        return this.newValue(NodeTypes.BOOLEAN, a.value < b.value);
+    }
+    less_equal(a, b) {
+        if (this.areType(a, b, NodeTypes.NUMBER) || 
+        this.areType(a, b, NodeTypes.STRING))
+        return this.newValue(NodeTypes.BOOLEAN, a.value <= b.value);
+    }
+    and(a, b) {
+        if (this.areType(a, b, NodeTypes.BOOLEAN))
+        return this.newValue(NodeTypes.BOOLEAN, a.value && b.value);
+    }
+    or(a, b) {
+        if (this.areType(a, b, NodeTypes.BOOLEAN))
+        return this.newValue(NodeTypes.BOOLEAN, a.value || b.value);
+    }
+    not(a) {
+        if (this.isType(a, NodeTypes.BOOLEAN))
+        return this.newValue(NodeTypes.BOOLEAN, !a.value);
+    }
+    uminus(a) {
+        if (this.isType(a, NodeTypes.NUMBER))
+        return this.newValue(NodeTypes.NUMBER, -a.value);
+    }
+    raiseRuntimeError(msg) {
+        throw new RuntimeError(msg, this.callStack);
+    }
+
+}
+
+let op = new Operations();
+
 class RuntimeError extends Error {
     constructor(message, stack) {
         super(message)
@@ -25,7 +179,7 @@ class RuntimeError extends Error {
         let r = `${this.name}: ${this.message}\n`;
         r += 'Stack: \n';
         let t = this.stack;
-        while(t && t.fun) {
+        while (t && t.fun) {
             r += `\t${t.fun.name || t.fun}\n`;
             t = t.prev;
         }
@@ -49,7 +203,7 @@ class Enviourment {
     }
     resolveSet(variable, value) {
         if (variable in this.variables) {
-            this.variables[variable] = value;
+            this.variables[variable] = new Value(value.type, value.value);
             return true;
         } else if (this.parent != null) {
             return this.parent.resolveSet(variable, value);
@@ -73,13 +227,13 @@ class Interpreter {
         this.out = out;
     }
     run() {
-        for(let statement of this.statements) {
+        for (let statement of this.statements) {
             this.evaluate(statement);
         }
     }
 
     evaluate(statement) {
-        switch(statement.type) {
+        switch (statement.type) {
             case NodeTypes.INBUILT_CALL:
                 return this.inbuiltcall(statement);
             case NodeTypes.BINARY_OP:
@@ -92,9 +246,17 @@ class Interpreter {
             case NodeTypes.NONE:
             case NodeTypes.BOOLEAN:
             case NodeTypes.NUMBER:
-                return statement.value;
+                return statement;
             case NodeTypes.IDENTIFIER:
-                return this.currEnv.resolveGet(statement.value);
+                let value = this.currEnv.resolveGet(statement.value)
+                if (value === undefined) {
+                    this.raiseRuntimeError("Undefined Identifer.")
+                } else if (value === null) {
+                    this.raiseRuntimeError("Uninitialized variable access.")
+                } else {
+                    return this.currEnv.resolveGet(statement.value);
+                }
+                break;
             case NodeTypes.BLOCK:
                 return this.evaluateBlock(statement);
             case NodeTypes.IFSTATEMENT:
@@ -141,7 +303,7 @@ class Interpreter {
         }
 
         let fun = this.currEnv.resolveGet(statement.name);
-        
+
         console.log(fun);
 
         if (!fun || fun.type !== NodeTypes.FUNDECLARE) this.raiseRuntimeError("Undefined function.");
@@ -188,9 +350,9 @@ class Interpreter {
     evaluateForLoop(statement) {
         this.currEnv = new Enviourment(this.currEnv);
 
-        for(this.evaluate(statement.initialisation);
-        this.evaluate(statement.condition);
-        this.evaluate(statement.increment)) {
+        for (this.evaluate(statement.initialisation);
+            this.evaluate(statement.condition);
+            this.evaluate(statement.increment)) {
             this.evaluate(statement.block);
         }
         this.currEnv = this.currEnv.parent;
@@ -205,9 +367,9 @@ class Interpreter {
         let e = null;
         if (statement.value) e = this.evaluate(statement.value);
         this.currEnv.declare(statement.identifier);
-        this.currEnv.resolveSet(statement.identifier, e);
+        if (e !== null) this.currEnv.resolveSet(statement.identifier, e);
     }
-    evaluateIfStatement(statement){
+    evaluateIfStatement(statement) {
         let e = this.evaluate(statement.condition);
         if (e) {
             this.evaluate(statement.statements);
@@ -223,11 +385,12 @@ class Interpreter {
         this.currEnv = this.currEnv.parent;
     }
     inbuiltcall(statement) {
-        switch(statement.name.type) {
+        switch (statement.name.type) {
             case TokenTypes.PRINT:
                 let t = []
                 for (let operand of statement.operands.list) {
-                    t.push(this.evaluate(operand));
+                    let e = this.evaluate(operand);
+                    t.push(e);
                 }
                 for (let i of t) {
                     this.printValue(i);
@@ -235,69 +398,29 @@ class Interpreter {
         }
     }
     printValue(value) {
-        if (value === null) this.out.value += "None";
-        else if (value === true) this.out.value += "True";
-        else if (value === false) this.out.value +="False";
-        else this.out.value += value;
+        if (value.type === NodeTypes.NONE) this.out.value += "None";
+        else if (value.value === true) this.out.value += "True";
+        else if (value.value === false) this.out.value += "False";
+        else this.out.value += value.value;
     }
     evalBinary(statement) {
-        switch(statement.op.type) {
-            case TokenTypes.ADD:
-                return this.evaluate(statement.left)  + this.evaluate(statement.right);
-            case TokenTypes.MINUS:
-                return this.evaluate(statement.left)  - this.evaluate(statement.right);
-            case TokenTypes.DIV:
-                return this.evaluate(statement.left)  / this.evaluate(statement.right);
-            case TokenTypes.MUL:
-                let left = this.evaluate(statement.left);
-                let right = this.evaluate(statement.right);
-                if (typeof left === typeof "" && typeof right == typeof 1) {
-                    if (Number.isInteger(right) && right >= 0) {
-                        let result = "";
-                        for (let i = 0; i < right; i++) {
-                            result += left;
-                        }
-                        return result;
-                    } else this.raiseRuntimeError("Can not multiply string with a non-integer number.");
-                }
-                return left * right;
-            case TokenTypes.EQUAL_EQUAL:
-                return this.evaluate(statement.left) === this.evaluate(statement.right);
-            case TokenTypes.BANG_EQUAL:
-                return this.evaluate(statement.left) !== this.evaluate(statement.right);
-            case TokenTypes.GREATER_THAN:
-                return this.evaluate(statement.left)  > this.evaluate(statement.right);
-            case TokenTypes.GREATER_THAN_EQUAL_TO:
-                return this.evaluate(statement.left)  >= this.evaluate(statement.right);
-            case TokenTypes.LESS_THAN:
-                return this.evaluate(statement.left)  < this.evaluate(statement.right);
-            case TokenTypes.LESS_THAN_EQUAL_TO:
-                return this.evaluate(statement.left)  <= this.evaluate(statement.right);
-            case TokenTypes.OR:
-                return this.evaluate(statement.left)  || this.evaluate(statement.right);
-            case TokenTypes.AND:
-                return this.evaluate(statement.left)  && this.evaluate(statement.right);
-            case TokenTypes.EQUAL:
-                let list = [];
-                for (let item of statement.right.list) {
-                    list.push(this.evaluate(item));
-                }
-                for (let i = 0; i < statement.left.list.length; i++) {
-                    let t = this.currEnv.resolveSet(statement.left.list[i].value, list[i]);
-                    if (!t) this.raiseRuntimeError("Variable not defined.", statement.left.list[i]);
-                }
-                return statement.left;
+        return op.operateB(this.evaluate(statement.left), this.evaluate(statement.right), statement.op);
+    }
+    assign(left, right) {
+        let list = [];
+        for (let item of right.list) {
+            list.push(this.evaluate(item));
         }
+        for (let i = 0; i < left.list.length; i++) {
+            let t = this.currEnv.resolveSet(left.list[i].value, list[i]);
+            if (!t) this.raiseRuntimeError("Variable not defined.", left.list[i]);
+        }
+        return left;
     }
     evalUnary(statement) {
-        switch(statement.op) {
-            case TokenTypes.NOT:
-                return ! this.evaluate(statement.right);
-            case TokenTypes.MINUS:
-                return - this.evaluate(statement.right);
-        }
+        return op.operateU(this.evaluate(statement.right), statement.op);
     }
 }
 
 
-export {Interpreter, RuntimeError};
+export { Interpreter, RuntimeError };
