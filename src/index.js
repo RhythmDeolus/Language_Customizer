@@ -49,5 +49,5 @@ class HL {
 
 let hl = new HL();
 
-export {hl};
+export default {hl};
 
