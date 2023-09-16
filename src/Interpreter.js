@@ -62,9 +62,7 @@ class Operations {
     }
 
     operateB(a, b, op) {
-        console.log(a, b, op);
         let result = this.getValueAfterOpB(a, b, op);
-        console.log(result);
         if (result !== undefined) return result;
         this.raiseOperationError(op, a, b);
     }
@@ -304,11 +302,10 @@ class Interpreter {
 
         let fun = this.currEnv.resolveGet(statement.name);
 
-        console.log(fun);
+        if (!fun?.value || fun.value.type !== NodeTypes.FUNDECLARE) this.raiseRuntimeError("Undefined function.");
 
-        if (!fun || fun.type !== NodeTypes.FUNDECLARE) this.raiseRuntimeError("Undefined function.");
-
-        this.currEnv = fun.parent; // closure
+        fun = fun.value;
+        this.currEnv = fun?.parent; // closure
 
         this.currEnv = new Enviourment(this.currEnv);
 
@@ -338,7 +335,7 @@ class Interpreter {
     evaluateFunDeclaration(statement) {
         statement.parent = this.currEnv;
         this.currEnv.declare(statement.name);
-        this.currEnv.resolveSet(statement.name, statement);
+        this.currEnv.resolveSet(statement.name, new Value(NodeTypes.FUNDECLARE, statement));
     }
 
     evaluateVarExprList(statement) {
@@ -351,15 +348,18 @@ class Interpreter {
         this.currEnv = new Enviourment(this.currEnv);
 
         for (this.evaluate(statement.initialisation);
-            this.evaluate(statement.condition);
+            this.isTruthy(this.evaluate(statement.condition));
             this.evaluate(statement.increment)) {
             this.evaluate(statement.block);
         }
         this.currEnv = this.currEnv.parent;
     }
+    isTruthy(e) {
+        return e.value == true;
+    }
 
     evaluateWhileLoop(statement) {
-        while (this.evaluate(statement.condition)) {
+        while (this.isTruthy(this.evaluate(statement.condition))) {
             this.evaluate(statement.block);
         }
     }
@@ -371,7 +371,7 @@ class Interpreter {
     }
     evaluateIfStatement(statement) {
         let e = this.evaluate(statement.condition);
-        if (e) {
+        if (this.isTruthy(e)) {
             this.evaluate(statement.statements);
         } else {
             if (statement.else_statements) this.evaluate(statement.else_statements);
@@ -404,6 +404,7 @@ class Interpreter {
         else this.out.value += value.value;
     }
     evalBinary(statement) {
+        if (statement.op.type === TokenTypes.EQUAL) return this.assign(statement.left, statement.right);
         return op.operateB(this.evaluate(statement.left), this.evaluate(statement.right), statement.op);
     }
     assign(left, right) {

@@ -1,4 +1,4 @@
-import { reverseKeywords, TokenTypes } from "./Tokenizer"
+import { reverseKeywords, TokenTypes } from "./Tokenizer.js"
 
 function documentations() {
   return [

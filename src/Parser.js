@@ -291,7 +291,6 @@ class Parser {
             if (this.match(TokenTypes.VAR)) list.push(this.varDeclaration());
             else list.push(this.or());
         } while ((!this.isAtEnd() && this.match(TokenTypes.COMMA)));
-        console.log(list);
         if (this.isAtEnd()) throw new CompilerError("unexpected end of stream.", this.getLineNo());
         return new VarExprList(list);
     }
