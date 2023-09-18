@@ -272,11 +272,10 @@ class Tokenizer {
         while(this.peek() != '\n' && this.peek() !== null) this.currIndex++;
     }
     string_l(c) {
-        let i = this.currIndex;
         let escaping = false;
         let string_building = "";
         let map = {
-            "a" : "\a",
+            "a" : "a",
             "b" : "\b",
             "f" : "\f",
             "n" : "\n",
@@ -353,4 +352,5 @@ class Tokenizer {
     }
 }
 
-export  {Tokenizer, Token, TokenTypes, Keywords, reverseKeywords, KeyColors, KeyDesc, CompilerError};
+
+module.exports =  {Tokenizer, Token, TokenTypes, Keywords, reverseKeywords, KeyColors, KeyDesc, CompilerError};

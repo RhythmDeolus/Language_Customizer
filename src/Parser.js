@@ -1,4 +1,4 @@
-import {Token, TokenTypes, CompilerError} from "./Tokenizer.js";
+const {Token, TokenTypes, CompilerError} = require("./Tokenizer.js");
 
 class ASTNode {
     constructor(type) {
@@ -26,6 +26,8 @@ let NodeTypes = Object.freeze({
     FUNDECLARE: 17,
     FUNCALL: 18,
     RETURNSTMT: 19,
+    ARRAYLITERAL: 20,
+    ARRAY: 21,
 })
 
 
@@ -68,7 +70,8 @@ class BinaryOperation extends ASTNode {
         this.op = op
     }
     isAssignable() {
-        return typeof this.right == ExprList && this.right.isAssignable();
+        debugger;
+        return typeof this.right instanceof ExprList && this.right.isAssignable();
     }
 }
 
@@ -143,7 +146,7 @@ class ExprList extends ASTNode {
     }
     isAssignable() {
         for (let item of this.list) {
-            if (item.type != NodeTypes.IDENTIFIER) {
+            if (item.type !== NodeTypes.IDENTIFIER && item?.op?.type !== TokenTypes.OPEN_BRACKET) {
                 return false;
             }
         }
@@ -203,7 +206,8 @@ class Parser {
         }
         if (this.match(TokenTypes.FUNCTION)) {
             return this.funDeclaration();
-        } if (this.match(TokenTypes.RETURN)) {
+        }
+        if (this.match(TokenTypes.RETURN)) {
             return this.returnStatement();
         }
         let e = this.expression();
@@ -331,13 +335,7 @@ class Parser {
 
     printStatement() {
         let op = this.previous();
-        // console.log("parsing operands");
-        // operands.push(this.expression());
-        // while (this.match(TokenTypes.COMMA)) {
-        //     operands.push(this.expression());
-        // }
         let exprList = this.expressionList()
-        // console.log(operands);
         this.consume(TokenTypes.LINE_END, "Expect Line End after print statement.");
         return new InBuiltFunctionCalls(op, exprList);
     }
@@ -430,6 +428,7 @@ class Parser {
         return e1;
     }
 
+
     term() {
         let e1 = this.factor();
 
@@ -459,10 +458,20 @@ class Parser {
             return new UnaryOperation(r, op);
         }
 
-        return this.primary();
+        return this.index();
+    }
+    index() {
+        let e1 = this.primary();
+        while (this.match(TokenTypes.OPEN_BRACKET)) {
+            let op = this.previous();
+            let r = this.term();
+            this.consume(TokenTypes.CLOSE_BRACKET, "Expect ']' in indexing.");
+            e1 = new BinaryOperation(e1, r,  op);
+        }
+
+        return e1;
     }
     primary() {
-        // console.log("parsing primary :" , this.isAtEnd());
         if (this.match(TokenTypes.FALSE)) return new Value(NodeTypes.BOOLEAN, false);
         if (this.match(TokenTypes.TRUE)) return new Value(NodeTypes.BOOLEAN, true);
         if (this.match(TokenTypes.NONE)) return new Value(NodeTypes.NONE, null);
@@ -483,6 +492,11 @@ class Parser {
             let e1 = this.expression();
             this.consume(TokenTypes.CLOSE_PARENTHESIS, "Expect ')' after expression.");
             return new Grouping(e1);
+        } 
+        if (this.match(TokenTypes.OPEN_BRACKET)) {
+            let e1 = this.expressionList();
+            this.consume(TokenTypes.CLOSE_BRACKET, "Expect ']' at the end of an array" );
+            return new Value(NodeTypes.ARRAYLITERAL, e1);
         }
 
         throw this.error(this.peek(), "Expect expression");
@@ -550,4 +564,4 @@ class Parser {
 }
 
 
-export {Parser, NodeTypes, Value}
+module.exports = {Parser, NodeTypes, Value}

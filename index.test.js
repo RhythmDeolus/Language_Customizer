@@ -1,4 +1,4 @@
-import HL from './src/index';
+const HL = require('./src/index');
 
 function run(input) {
   let out = {
@@ -51,7 +51,12 @@ test("comments", () => {
   expect(run("// print nothing")).toBe('');
 })
 
-
 test("functions", () => {
   expect(run("def f1() { return 'hello';} print f1();")).toBe('hello');
+})
+
+test("array", () => {
+  expect(run("print [1, 2, 3];")).toBe('[1, 2, 3]');
+  expect(run("print [1, 2, 3][0];")).toBe('1');
+  expect(run("var a = [1, 2, 3]; a[0] = 0; print a;")).toBe('[0, 2, 3]');
 })

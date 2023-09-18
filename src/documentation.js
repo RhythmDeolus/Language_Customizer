@@ -1,4 +1,4 @@
-import { reverseKeywords, TokenTypes } from "./Tokenizer.js"
+const { reverseKeywords, TokenTypes } = require("./Tokenizer.js");
 
 function documentations() {
   return [
@@ -74,4 +74,4 @@ function documentations() {
 }
 
 
-export { documentations }
+module.exports = { documentations }

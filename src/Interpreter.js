@@ -1,5 +1,5 @@
-import { NodeTypes, Value } from "./Parser.js";
-import { TokenTypes } from "./Tokenizer.js";
+const { NodeTypes, Value } = require("./Parser.js");
+const { TokenTypes } = require("./Tokenizer.js");
 
 class ReturnError extends Error {
     constructor(value) {
@@ -15,13 +15,13 @@ class FunctionCall {
     }
 }
 
+
 class Operations {
     newValue(type, a) {
         return new Value(type, a);
     }
     checkB(a, b, typea, typeb) {
-        if (a.type === typea && b.type === typeb) return true;
-        return false;
+        return a.type === typea && b.type === typeb;
     }
     getValueAfterOpB(a, b, op) {
         switch(op.type) {
@@ -49,6 +49,11 @@ class Operations {
                 return this.or(a, b);
             case TokenTypes.AND:
                 return this.and(a, b);
+            case TokenTypes.OPEN_BRACKET:
+                return this.index(a, b);
+            default:
+                console.log("No operation found");
+                break;
         }
     }
 
@@ -80,7 +85,16 @@ class Operations {
             if (NodeTypes[key] === enum_val) return key;
         }
         return null;
-    } 
+    }
+    copyValue(v) {
+        return new Value(v.type, v.value);
+    }
+
+    index(a, b) {
+        if (this.checkB(a, b, NodeTypes.ARRAY, NodeTypes.NUMBER)) {
+            return a.value[b.value];
+        }
+    }
     add(a, b) {
         if (this.checkB(a, b, NodeTypes.NUMBER, NodeTypes.NUMBER) ||
         this.checkB(a, b, NodeTypes.STRING, NodeTypes.STRING))
@@ -239,11 +253,13 @@ class Interpreter {
             case NodeTypes.UNARY_OP:
                 return this.evalUnary(statement);
             case NodeTypes.GROUPING:
-                return this.evaluate(statement.expr);
+                let e = this.evaluate(statement.expr);
+                return new Value(e.type, e.value);
             case NodeTypes.STRING:
             case NodeTypes.NONE:
             case NodeTypes.BOOLEAN:
             case NodeTypes.NUMBER:
+            case NodeTypes.ARRAY:
                 return statement;
             case NodeTypes.IDENTIFIER:
                 let value = this.currEnv.resolveGet(statement.value)
@@ -275,11 +291,22 @@ class Interpreter {
                 return this.evaluateExprList(statement);
             case NodeTypes.RETURNSTMT:
                 return this.evaluateReturnStatement(statement);
+            case NodeTypes.ARRAYLITERAL:
+                return this.evaluateArrayLiteral(statement);
         }
     }
 
+    evaluateArrayLiteral(statement) {
+        let list = [];
+        for (let t of statement.value.list) {
+            list.push(this.evaluate(t));
+        }
+        return new Value(NodeTypes.ARRAY, list);
+    }
+
     evaluateReturnStatement(statement) {
-        throw new ReturnError(this.evaluate(statement.exprList));
+        let e = this.evaluate(statement.exprList);
+        throw new ReturnError(new Value(e.type, e.value));
     }
 
     raiseRuntimeError(msg) {
@@ -317,7 +344,7 @@ class Interpreter {
             if (v.value) this.currEnv.resolveSet(v.identifier, this.evaluate(v.value));
             this.currEnv.resolveSet(v.identifier, evaluatedList[i]);
         }
-        let r = null;
+        let r = new Value(NodeTypes.NONE, null);
         try {
             this.evaluate(fun.body);
         } catch (err) {
@@ -373,9 +400,7 @@ class Interpreter {
         let e = this.evaluate(statement.condition);
         if (this.isTruthy(e)) {
             this.evaluate(statement.statements);
-        } else {
-            if (statement.else_statements) this.evaluate(statement.else_statements);
-        }
+        } else if (statement.else_statements) this.evaluate(statement.else_statements);
     }
     evaluateBlock(block) {
         this.currEnv = new Enviourment(this.currEnv);
@@ -397,10 +422,23 @@ class Interpreter {
                 }
         }
     }
+    print(t) {
+        this.out.value += t;
+    }
     printValue(value) {
         if (value.type === NodeTypes.NONE) this.out.value += "None";
         else if (value.value === true) this.out.value += "True";
         else if (value.value === false) this.out.value += "False";
+        else if (value.type == NodeTypes.ARRAY) {
+            this.print("[");
+            for (let i = 0; i < value.value.length; i++) {
+                this.printValue(value.value[i]);
+                if (i !== value.value.length - 1) {
+                    this.print(", ");
+                }
+            }
+            this.print("]");
+        }
         else this.out.value += value.value;
     }
     evalBinary(statement) {
@@ -409,12 +447,16 @@ class Interpreter {
     }
     assign(left, right) {
         let list = [];
+        let leftList = []
         for (let item of right.list) {
             list.push(this.evaluate(item));
         }
-        for (let i = 0; i < left.list.length; i++) {
-            let t = this.currEnv.resolveSet(left.list[i].value, list[i]);
-            if (!t) this.raiseRuntimeError("Variable not defined.", left.list[i]);
+        for (let item of left.list) {
+            leftList.push(this.evaluate(item));
+        }
+        for (let i = 0; i < leftList.length; i++) {
+            if (!leftList[i]) this.raiseRuntimeError("Variable not defined.");
+            leftList[i].value = list[i].value;
         }
         return left;
     }
@@ -424,4 +466,4 @@ class Interpreter {
 }
 
 
-export { Interpreter, RuntimeError };
+module.exports = { Interpreter, RuntimeError };

@@ -1,10 +1,10 @@
-import { Tokenizer, Keywords, TokenTypes, reverseKeywords, KeyColors, KeyDesc, CompilerError } from "./Tokenizer.js";
+const { Tokenizer, Keywords, TokenTypes, reverseKeywords, KeyColors, KeyDesc, CompilerError } = require("./Tokenizer.js");
 
-import { Parser } from "./Parser.js";
+const { Parser } = require("./Parser.js");
 
-import { Interpreter, RuntimeError } from "./Interpreter.js";
+const { Interpreter, RuntimeError } = require("./Interpreter.js");
 
-import { documentations } from "./documentation.js";
+const { documentations } = require("./documentation.js");
 
 class HL {
     run(text, out) {
@@ -49,5 +49,5 @@ class HL {
 
 let hl = new HL();
 
-export default { hl };
+module.exports = { hl };
 
