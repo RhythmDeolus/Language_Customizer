@@ -36,6 +36,7 @@ let TokenTypes = Object.freeze({
     RETURN: 34,
     PRINT: 35,
     COMMA: 36,
+    DOT: 37,
 })
 
 class CompilerError extends Error {
@@ -93,7 +94,7 @@ let KeyDesc = [
     [TokenTypes.FOR, "creates a loop that consists of three optional expressions, enclosed in parentheses and separated by semicolons, followed by a statement to be executed in the loop."],
     [TokenTypes.FUNCTION, "creates a binding of a new function to a given name."],
     [TokenTypes.TRUE, "boolean value equivalent to true"],
-    [TokenTypes.FALSE, "boolean value equivalent to true"],
+    [TokenTypes.FALSE, "boolean value equivalent to false"],
     [TokenTypes.NONE, "null value"],
     [TokenTypes.PRINT, "prints to the output"],
     [TokenTypes.CLASS, "creates a class"],
@@ -178,6 +179,9 @@ class Tokenizer {
                     break;
                 case "*":
                     this.tokens.push(new Token(lineno, TokenTypes.MUL, c))
+                    break;
+                case ".":
+                    this.tokens.push(new Token(lineno, TokenTypes.DOT, c))
                     break;
                 case "/":
                     if (this.peek() == "/") {

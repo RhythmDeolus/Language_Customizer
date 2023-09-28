@@ -43,6 +43,9 @@ class Value extends ASTNode {
         super(type);
         this.value = value;
     }
+    copy() {
+        return new Value(this.type, this.value);
+    }
 }
 
 class VarExprList extends ASTNode {
@@ -70,9 +73,9 @@ class BinaryOperation extends ASTNode {
         this.op = op
     }
     isAssignable() {
-        debugger;
         return typeof this.right instanceof ExprList && this.right.isAssignable();
     }
+
 }
 
 class Grouping extends ASTNode {
@@ -461,11 +464,21 @@ class Parser {
         return this.index();
     }
     index() {
-        let e1 = this.primary();
+        let e1 = this.dot();
         while (this.match(TokenTypes.OPEN_BRACKET)) {
             let op = this.previous();
             let r = this.term();
             this.consume(TokenTypes.CLOSE_BRACKET, "Expect ']' in indexing.");
+            e1 = new BinaryOperation(e1, r,  op);
+        }
+
+        return e1;
+    }
+    dot() {
+        let e1 = this.primary();
+        while (this.match(TokenTypes.DOT)) {
+            let op = this.previous();
+            let r = this.primary();
             e1 = new BinaryOperation(e1, r,  op);
         }
 

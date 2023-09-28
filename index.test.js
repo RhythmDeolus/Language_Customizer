@@ -59,4 +59,9 @@ test("array", () => {
   expect(run("print [1, 2, 3];")).toBe('[1, 2, 3]');
   expect(run("print [1, 2, 3][0];")).toBe('1');
   expect(run("var a = [1, 2, 3]; a[0] = 0; print a;")).toBe('[0, 2, 3]');
+  expect(run("var a = [1, 2, 3]; print a.length;")).toBe('3');
+  expect(run("var a = [1, 2, 3]; print a.push(4); print a;")).toBe('None[1, 2, 3, 4]');
+  expect(run("var a = [1, 2, 3]; print a.pop(); print a;")).toBe('3[1, 2]');
+  expect(run("var a = [1, 2, 3]; print a.unshift(4); print a;")).toBe('None[4, 1, 2, 3]');
+  expect(run("var a = [1, 2, 3]; print a.shift(); print a;")).toBe('1[2, 3]');
 })
