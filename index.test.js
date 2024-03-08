@@ -56,6 +56,7 @@ test("functions", () => {
 })
 
 test("array", () => {
+  expect(run("print [];")).toBe('[]');
   expect(run("print [1, 2, 3];")).toBe('[1, 2, 3]');
   expect(run("print [1, 2, 3][0];")).toBe('1');
   expect(run("var a = [1, 2, 3]; a[0] = 0; print a;")).toBe('[0, 2, 3]');

@@ -441,7 +441,7 @@ class Interpreter {
         if (value.type === Datatypes.NONE) this.out.value += "None";
         else if (value.value === true) this.out.value += "True";
         else if (value.value === false) this.out.value += "False";
-        else if (value.type == Datatypes.ARRAY) {
+        else if (value.type === Datatypes.ARRAY) {
             this.print("[");
             for (let i = 0; i < value.value.length; i++) {
                 this.printValue(value.value[i]);

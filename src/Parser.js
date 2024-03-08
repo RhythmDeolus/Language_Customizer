@@ -507,7 +507,12 @@ class Parser {
             return new Grouping(e1);
         } 
         if (this.match(TokenTypes.OPEN_BRACKET)) {
-            let e1 = this.expressionList();
+            let e1 = null;
+            if (this.peek().type === TokenTypes.CLOSE_BRACKET) {
+                e1 = new ExprList([]);
+            } else {
+                e1 = this.expressionList();
+            }
             this.consume(TokenTypes.CLOSE_BRACKET, "Expect ']' at the end of an array" );
             return new Value(NodeTypes.ARRAYLITERAL, e1);
         }

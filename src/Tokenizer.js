@@ -319,7 +319,7 @@ class Tokenizer {
         this.tokens.push(new Token(this.currLine, TokenTypes.IDENTIFIER, literal));
     }
     isAlphaNumeric(c) {
-        return c != null  && (this.isLetter(c) || this.isNumber(c));
+        return c != null  && (this.isLetter(c)|| c === '_' || this.isNumber(c));
     }
     isLetter(c) {
         if (c == null) return false;
