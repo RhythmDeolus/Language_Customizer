@@ -1,6 +1,12 @@
 const { NodeTypes, Value } = require("./Parser.js");
 const { TokenTypes } = require("./Tokenizer.js");
 
+let inbuilt_calls = {
+    get_time() {
+        return new Value(NodeTypes.NUMBER, Date.now());
+    }
+}
+
 
 const {TypeToObject, Datatypes, ArrayL, ObjectL, NumberL, StringL, NoneL, BooleanL} = require('./Datatypes')
 
@@ -339,7 +345,12 @@ class Interpreter {
             evaluatedList.push(this.evaluate(expr));
         }
 
+
         let fun = this.currEnv.resolveGet(statement.name);
+
+        if (!fun && statement.name in inbuilt_calls) {
+            return  inbuilt_calls[statement.name](...evaluatedList);
+        }
 
         if (!fun?.value || fun.value.type !== NodeTypes.FUNDECLARE) this.raiseRuntimeError("Undefined function.");
 
