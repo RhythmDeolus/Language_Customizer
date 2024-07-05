@@ -67,3 +67,7 @@ test("array", () => {
   expect(run("var a = [1, 2, 3]; print a.unshift(4); print a;")).toBe('None[4, 1, 2, 3]');
   expect(run("var a = [1, 2, 3]; print a.shift(); print a;")).toBe('1[2, 3]');
 })
+
+test("inbuiltcalls", () => {
+    expect(run("print get_time();")).toMatch(/\d+(\.)?\d+/);
+})
