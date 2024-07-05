@@ -53,6 +53,7 @@ test("comments", () => {
 
 test("functions", () => {
   expect(run("def f1() { return 'hello';} print f1();")).toBe('hello');
+  expect(run("var a = 0; { def f1() { print a;} f1(); var a = 1; f1();}")).toBe('00');
 })
 
 test("array", () => {

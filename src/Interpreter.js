@@ -234,6 +234,10 @@ class Enviourment {
         return variable in this.variables;
     }
     declare(variable) {
+        let stashedEnvironment = new Enviourment(this.parent, this.name);
+        stashedEnvironment.variables = this.variables;
+        this.variables = {};
+        this.parent = stashedEnvironment;
         this.variables[variable] = null;
     }
 }
@@ -250,6 +254,12 @@ class Interpreter {
         for (let statement of this.statements) {
             this.evaluate(statement);
         }
+    }
+
+    moveEnviourment() {
+        let newEnviourment = new Enviourment(this.currEnv);
+        newEnviourment.parent = this.currEnv;
+        this.currEnv = newEnviourment;
     }
 
     evaluate(statement) {
@@ -352,6 +362,7 @@ class Interpreter {
 
         for (let i = 0; i < fun.parameters.length; i++) {
             let v = fun.parameters[i];
+            this.moveEnviourment();
             this.currEnv.declare(v.identifier);
             if (v.value) this.currEnv.resolveSet(v.identifier, this.evaluate(v.value));
             this.currEnv.resolveSet(v.identifier, evaluatedList[i]);
@@ -373,6 +384,7 @@ class Interpreter {
     }
     evaluateFunDeclaration(statement) {
         statement.parent = this.currEnv;
+        this.moveEnviourment();
         this.currEnv.declare(statement.name);
         this.currEnv.resolveSet(statement.name, new Value(NodeTypes.FUNDECLARE, statement));
     }
@@ -405,6 +417,7 @@ class Interpreter {
     evaluateVarDeclaration(statement) {
         let e = null;
         if (statement.value) e = this.evaluate(statement.value);
+        this.moveEnviourment();
         this.currEnv.declare(statement.identifier);
         if (e !== null) this.currEnv.resolveSet(statement.identifier, e);
     }
